@@ -3,32 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบนำเข้าข้อมูลและรูปภาพร้านค้า</title>
+    <title>เพื่อนแท้ช่างแอร์ แคเรียร์ - ระบบส่งงาน</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- ไลบรารีสำหรับบีบอัดรูปภาพก่อนอัพโหลด (ลดขนาดไฟล์ ป้องกัน Drive เต็มเร็ว) -->
+    <!-- ไลบรารีสำหรับบีบอัดรูปภาพก่อนอัพโหลด -->
     <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Prompt', sans-serif; background-color: #f3f4f6; }
+        body { font-family: 'Prompt', sans-serif; background-color: #e5e7eb; }
+        /* สีน้ำเงินแคเรียร์ */
+        .carrier-blue { background-color: #003057; }
+        .carrier-blue-light { background-color: #00529b; }
+        .text-carrier { color: #003057; }
+        .focus-carrier:focus { border-color: #00529b; box-shadow: 0 0 0 2px rgba(0, 82, 155, 0.2); }
+        /* ปรับแต่ง Scrollbar สำหรับ Modal */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4">
+<body class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-gray-100 to-gray-200">
 
-    <div class="bg-white w-full max-w-2xl rounded-2xl shadow-xl overflow-hidden relative">
-        <!-- Header -->
-        <div class="bg-blue-600 px-6 py-5">
-            <h2 class="text-2xl font-semibold text-white">ระบบนำเข้าข้อมูลร้านค้า</h2>
-            <p class="text-blue-100 text-sm mt-1">อัพโหลดไฟล์ Excel และรูปภาพ (สูงสุด 50 รูป)</p>
+    <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden relative border border-gray-100">
+        <!-- Header ธีมแคเรียร์ -->
+        <div class="bg-gradient-to-r from-[#003057] to-[#00529b] px-6 py-8 text-center relative overflow-hidden">
+            <!-- ลวดลายพื้นหลังตกแต่ง (Background Pattern) -->
+            <svg class="absolute top-0 left-0 transform -translate-x-1/2 -translate-y-1/2 text-white opacity-5 h-64 w-64" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2L2 22h20L12 2zm0 3.83L18.17 20H5.83L12 5.83z"/>
+            </svg>
+            <svg class="absolute bottom-0 right-0 transform translate-x-1/3 translate-y-1/3 text-white opacity-10 h-48 w-48" fill="currentColor" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/>
+            </svg>
+
+            <!-- โลโก้แคมเปญ -->
+            <div class="relative z-10 flex justify-center mb-2">
+                <img src="https://img5.pic.in.th/file/secure-sv1/final-Logo-CarrierCampaign-2025---Copy.png" alt="เพื่อนแท้ช่างแอร์ แคเรียร์" class="h-24 sm:h-28 object-contain drop-shadow-xl">
+            </div>
+            
+            <p class="relative z-10 text-blue-100 text-sm mt-2 font-light">ระบบข้อมูลและอัพโหลดรูปภาพสะสมคะแนน(สูงสุด 20 รูป/ครั้ง)</p>
+            
+            <div class="relative z-10 mt-2">
+                <span class="inline-block bg-white/10 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-full border border-white/20">
+                    เฉพาะเครื่องที่ถูกจัดจำหน่ายผ่าน บริษัท บี.กริม แคเรียร์ (ประเทศไทย) จำกัด
+                </span>
+            </div>
+
+            <!-- ปุ่มเปิดเงื่อนไขโครงการ -->
+            <div class="relative z-10 mt-4">
+                <button type="button" onclick="openConditionsModal()" class="inline-flex items-center gap-1.5 text-xs text-blue-100 hover:text-white bg-black/20 hover:bg-black/30 px-4 py-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-white/50">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    อ่านเงื่อนไขโครงการ
+                </button>
+            </div>
         </div>
 
         <!-- ฟอร์มกรอกข้อมูล -->
-        <form id="uploadForm" class="p-6 space-y-6">
+        <form id="uploadForm" class="p-6 sm:p-8 space-y-6">
             
             <!-- 1. ชื่อร้านค้า -->
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1" for="shopName">ชื่อร้านค้า <span class="text-red-500">*</span></label>
+                <label class="block text-sm font-semibold text-gray-700 mb-1" for="shopName">ร้านค้าตัวแทนจำหน่าย <span class="text-red-500">*</span></label>
                 <select id="shopName" name="shopName" required
-                    class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus-carrier bg-gray-50 transition-colors">
                     <option value="" disabled selected>-- กรุณาเลือกร้านค้า --</option>
                     <option value="Shop_A">ร้านค้า A (สาขาหลัก)</option>
                     <option value="Shop_B">ร้านค้า B (สาขารอง)</option>
@@ -39,43 +77,63 @@
 
             <!-- 2. หมายเลขบัตร -->
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1" for="idCard">หมายเลขบัตร <span class="text-red-500">*</span></label>
-                <input type="text" id="idCard" name="idCard" required placeholder="กรอกหมายเลขบัตร 13 หลัก" maxlength="13" pattern="\d{13}" title="กรุณากรอกตัวเลข 13 หลัก"
-                    class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <label class="block text-sm font-semibold text-gray-700 mb-1" for="idCard">
+                    หมายเลขบัตรประชาชนช่าง 
+                    <span class="text-xs text-gray-500 font-normal ml-1">(ที่ลงทะเบียนในระบบเพื่อนแท้ช่างแอร์แคเรียร์)</span> 
+                    <span class="text-red-500">*</span>
+                </label>
+                <input type="text" id="idCard" name="idCard" required placeholder="กรอกหมายเลข 13 หลัก" maxlength="13" pattern="\d{13}" title="กรุณากรอกตัวเลข 13 หลัก"
+                    class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus-carrier bg-gray-50 transition-colors">
             </div>
 
             <!-- 3. อัพโหลดไฟล์ Excel -->
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1" for="excelFile">อัพโหลดไฟล์ Excel <span class="text-red-500">*</span></label>
-                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:bg-gray-50 transition-colors">
+                <label class="block text-sm font-semibold text-gray-700 mb-1" for="excelFile">แนบไฟล์ข้อมูล (Excel) <span class="text-red-500">*</span></label>
+                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl hover:bg-[#f0f7ff] hover:border-[#00529b] transition-all duration-300 group">
                     <div class="space-y-1 text-center">
-                        <svg class="mx-auto h-12 w-12 text-green-500" fill="none" viewBox="0 0 48 48" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" />
-                        </svg>
+                        <div class="mx-auto h-14 w-14 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                            <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                        </div>
                         <div class="flex text-sm text-gray-600 justify-center">
-                            <label for="excelFile" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500">
+                            <label for="excelFile" class="relative cursor-pointer bg-transparent rounded-md font-medium text-[#00529b] hover:text-[#003057] focus-within:outline-none">
                                 <span>คลิกเพื่อเลือกไฟล์ Excel</span>
                                 <input id="excelFile" name="excelFile" type="file" class="sr-only" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" required>
                             </label>
                         </div>
-                        <p id="excelFileName" class="text-sm font-semibold text-green-600 mt-2 hidden"></p>
+                        <p class="text-xs text-gray-500">รองรับไฟล์ .xls, .xlsx</p>
+                        <p id="excelFileName" class="text-sm font-semibold text-green-600 mt-3 hidden bg-green-50 py-1 px-3 rounded-full inline-block"></p>
                     </div>
                 </div>
             </div>
 
             <!-- 4. อัพโหลดรูปภาพ -->
             <div>
-                <div class="flex justify-between items-end mb-1">
-                    <label class="block text-sm font-medium text-gray-700" for="imageFiles">อัพโหลดรูปภาพ <span class="text-red-500">*</span></label>
-                    <span class="text-xs text-gray-500">เลือกได้สูงสุด 50 รูป</span>
+                <div class="flex justify-between items-start mb-2">
+                    <div class="flex-1">
+                        <label class="block text-sm font-semibold text-gray-700" for="imageFiles">
+                            รูปภาพ ที่มองเห็นหมายเลขเครื่องคอยล์เย็น (Nameplate หรือ บัตรรับประกัน) 
+                            <span class="text-red-500">*</span>
+                        </label>
+                        <!-- ตัวอย่างรูปภาพ -->
+                        <div class="flex items-center gap-3 mt-2.5">
+                            <span class="text-xs text-gray-500 font-medium">ตัวอย่าง:</span>
+                            <img src="https://img5.pic.in.th/file/secure-sv1/oXNHS-a9vf2bGpfgD2lhgZCiqoeBfQ2Fn0UAlYgP0C8pfrBGiRNebkwTchqlbL4wCfd_1YIBSQ8Nu95DRyd4j64Zg83KA3AxLEjDZAraItMN3En-GI-dABRiGxBqISi8hQ7XXNlMIvOKyR-Uke5ipw.jpg" alt="ตัวอย่าง บัตรรับประกัน" class="h-14 w-20 object-cover rounded-md border border-gray-300 shadow-sm hover:scale-[2] transition-transform duration-200 origin-bottom-left cursor-zoom-in">
+                            <img src="https://img5.pic.in.th/file/secure-sv1/89a7ec5f92b75a9dac0dacff4d12598b.jpeg" alt="ตัวอย่าง Nameplate" class="h-14 w-20 object-cover rounded-md border border-gray-300 shadow-sm hover:scale-[2.5] transition-transform duration-200 origin-bottom-left cursor-zoom-in">
+                        </div>
+                    </div>
+                    <span class="text-xs text-[#00529b] font-medium bg-blue-50 px-2 py-1 rounded-md whitespace-nowrap ml-2 mt-0.5">สูงสุด 20 รูป</span>
                 </div>
-                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:bg-gray-50 transition-colors">
+                <div class="mt-2 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl hover:bg-[#f0f7ff] hover:border-[#00529b] transition-all duration-300 group">
                     <div class="space-y-1 text-center">
-                        <svg class="mx-auto h-12 w-12 text-blue-400" fill="none" viewBox="0 0 48 48" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
+                        <div class="mx-auto h-14 w-14 bg-blue-100 text-[#00529b] rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                            <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                        </div>
                         <div class="flex text-sm text-gray-600 justify-center">
-                            <label for="imageFiles" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500">
+                            <label for="imageFiles" class="relative cursor-pointer bg-transparent rounded-md font-medium text-[#00529b] hover:text-[#003057] focus-within:outline-none">
                                 <span>คลิกเพื่อเลือกรูปภาพ</span>
                                 <input id="imageFiles" name="imageFiles" type="file" class="sr-only" accept="image/*, .heic, .heif" multiple required>
                             </label>
@@ -84,57 +142,184 @@
                     </div>
                 </div>
                 
-                <div id="imageError" class="hidden mt-2 p-3 bg-red-50 border border-red-200 rounded-md">
-                    <span id="imageErrorMessage" class="text-sm text-red-700"></span>
+                <div id="imageError" class="hidden mt-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start">
+                    <svg class="h-5 w-5 text-red-500 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span id="imageErrorMessage" class="text-sm text-red-700 font-medium"></span>
                 </div>
 
-                <div id="imageCountBadge" class="hidden mt-2">
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                        เลือกแล้ว: <span id="imageCountNumber" class="ml-1 font-bold">0</span>/50 รูป
+                <div id="imageCountBadge" class="hidden mt-3">
+                    <span class="inline-flex items-center px-4 py-1.5 rounded-lg text-sm font-semibold bg-[#e6f0fa] text-[#003057] border border-[#b3d4f5]">
+                        <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        เลือกแล้ว: <span id="imageCountNumber" class="ml-1 text-lg">0</span>/20 รูป
                     </span>
                 </div>
             </div>
 
             <!-- ปุ่ม Submit -->
-            <div class="pt-4 border-t border-gray-200">
+            <div class="pt-6 border-t border-gray-100">
                 <button type="submit" id="submitBtn"
-                    class="w-full py-3 px-4 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors">
-                    ยืนยันการอัพโหลดข้อมูล
+                    class="w-full py-3.5 px-4 border border-transparent rounded-xl shadow-lg text-lg font-semibold text-white bg-gradient-to-r from-[#003057] to-[#00529b] hover:from-[#002040] hover:to-[#003057] focus:outline-none focus:ring-4 focus:ring-[#00529b]/30 transform transition-all active:scale-[0.98]">
+                    ส่งข้อมูล
                 </button>
             </div>
         </form>
 
         <!-- Loading Overlay (มี Progress Bar) -->
-        <div id="loadingOverlay" class="hidden absolute inset-0 bg-white bg-opacity-95 flex flex-col items-center justify-center z-10 px-6">
-            <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-600 mb-4"></div>
-            <p id="progressText" class="text-lg font-medium text-gray-700 text-center">กำลังเชื่อมต่อระบบ...</p>
-            
-            <div class="w-full max-w-md bg-gray-200 rounded-full h-2.5 mt-4 mb-2">
-                <div id="progressBar" class="bg-blue-600 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+        <div id="loadingOverlay" class="hidden absolute inset-0 bg-white/95 backdrop-blur-sm flex flex-col items-center justify-center z-10 px-8">
+            <div class="relative w-20 h-20 mb-6">
+                <div class="absolute inset-0 border-4 border-[#e6f0fa] rounded-full"></div>
+                <div class="absolute inset-0 border-4 border-[#00529b] rounded-full border-t-transparent animate-spin"></div>
             </div>
-            <p class="text-sm text-red-500 mt-2 font-medium">⚠️ ห้ามปิดหน้าต่างนี้จนกว่าจะเสร็จสิ้น</p>
+            <p id="progressText" class="text-xl font-bold text-[#003057] text-center">กำลังเชื่อมต่อระบบ...</p>
+            <p class="text-gray-500 text-sm mt-1">กำลังจัดระเบียบไฟล์ของคุณ</p>
+            
+            <div class="w-full max-w-md bg-gray-200 rounded-full h-3 mt-6 mb-2 overflow-hidden shadow-inner">
+                <div id="progressBar" class="bg-gradient-to-r from-[#00529b] to-[#00a0df] h-3 rounded-full transition-all duration-300 relative" style="width: 0%">
+                    <div class="absolute inset-0 bg-white/20 w-full h-full animate-pulse"></div>
+                </div>
+            </div>
+            <p class="text-sm text-red-500 mt-4 font-semibold bg-red-50 px-4 py-2 rounded-full">⚠️ กรุณารอสักครู่ ห้ามปิดหน้าต่างนี้จนกว่าจะเสร็จสิ้น</p>
         </div>
 
         <!-- Success Message -->
-        <div id="successMessage" class="hidden absolute inset-0 bg-white flex flex-col items-center justify-center z-20 p-6 text-center">
-            <div class="h-20 w-20 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                <svg class="h-10 w-10 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        <div id="successMessage" class="hidden absolute inset-0 bg-white flex flex-col items-center justify-center z-20 p-8 text-center">
+            <div class="h-24 w-24 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-green-200 transform scale-0 animate-[popIn_0.5s_ease-out_forwards]">
+                <svg class="h-12 w-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
                 </svg>
             </div>
-            <h3 class="text-2xl font-bold text-gray-900 mb-2">อัพโหลดสำเร็จ!</h3>
-            <p class="text-gray-600 mb-6">ไฟล์ทั้งหมดถูกจัดเก็บลงโฟลเดอร์ใน Google Drive เรียบร้อยแล้ว</p>
-            <button onclick="window.location.reload()" class="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg font-medium transition-colors">
-                ส่งข้อมูลเพิ่มอีกครั้ง
+            <h3 class="text-3xl font-bold text-gray-900 mb-2">ส่งงานสำเร็จ!</h3>
+            <p class="text-gray-600 mb-2">ไฟล์และรูปภาพทั้งหมดของคุณถูกส่งเข้าระบบเรียบร้อยแล้ว</p>
+            
+            <div class="bg-[#f0f7ff] border border-[#b3d4f5] rounded-xl p-4 my-6 w-full max-w-sm">
+                <p id="uploadCountText" class="text-[#00529b] font-bold text-lg"></p>
+                <p class="text-sm text-gray-500 mt-1">ขอบคุณที่เป็นเพื่อนแท้ช่างแอร์แคเรียร์</p>
+            </div>
+
+            <button onclick="window.location.reload()" class="px-8 py-3 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-xl font-semibold transition-colors focus:ring-4 focus:ring-gray-200">
+                ส่งงานร้านอื่นเพิ่มเติม
             </button>
         </div>
     </div>
 
+    <!-- Modal เงื่อนไขโครงการ -->
+    <div id="conditionsModal" class="hidden fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <!-- Background overlay -->
+            <div class="fixed inset-0 bg-gray-900 bg-opacity-70 transition-opacity backdrop-blur-sm" aria-hidden="true" onclick="closeConditionsModal()"></div>
+
+            <!-- Trick to center modal -->
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+            <!-- Modal Panel -->
+            <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-[#f0f7ff] sm:mx-0 sm:h-10 sm:w-10">
+                            <svg class="h-6 w-6 text-[#00529b]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+                            </svg>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            <h3 class="text-xl leading-6 font-bold text-[#003057]" id="modal-title">
+                                📢 แจ้งรายละเอียดและเงื่อนไขโครงการ<br>"เพื่อนแท้ช่างแอร์"
+                            </h3>
+                            
+                            <div class="mt-4 text-sm text-gray-700 space-y-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+                                
+                                <!-- ข้อ 1 -->
+                                <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                                    <p class="font-bold text-[#003057] text-base mb-2">📌 1. การสะสมคะแนน</p>
+                                    <ul class="list-disc pl-5 space-y-1.5 mb-3">
+                                        <li>ใช้หมายเลขเครื่อง (Serial Number) ของ <span class="font-semibold text-[#00529b]">"คอยล์เย็นเท่านั้น"</span> (1 หมายเลข = สะสมได้ 1 ครั้ง)</li>
+                                        <li>ต้องเป็นเครื่องที่ถูกจัดจำหน่ายผ่าน บริษัท บี.กริม แคเรียร์ (ประเทศไทย) จำกัด เท่านั้น</li>
+                                    </ul>
+                                    <p class="font-semibold text-red-600 mt-3 mb-1">❌ เครื่องและเงื่อนไขที่ไม่เข้าร่วมโครงการ ได้แก่:</p>
+                                    <ul class="list-disc pl-5 space-y-1.5 text-gray-600">
+                                        <li>ข้อมูลเครื่องย้อนหลัง เกิน 2 ปี นับจากปีปัจจุบัน</li>
+                                        <li>เครื่องที่จัดจำหน่ายผ่านกลุ่มห้าง Modern Trade</li>
+                                        <li>เครื่องราคาโครงการ</li>
+                                    </ul>
+                                </div>
+
+                                <!-- ข้อ 2 -->
+                                <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                                    <p class="font-bold text-[#003057] text-base mb-2">⏳ 2. การใช้คะแนน และ วันหมดอายุ</p>
+                                    <ul class="list-disc pl-5 space-y-1.5">
+                                        <li>คะแนนจะถูกตัดรอบในวันที่ <span class="font-semibold text-[#00529b]">15 ธันวาคม ของทุกปี (เวลา 23:59 น.)</span></li>
+                                        <li>คะแนนไม่สามารถโอนให้ท่านอื่น หรือแลกเปลี่ยนเป็นเงินสดได้ในทุกกรณี</li>
+                                    </ul>
+                                </div>
+
+                                <!-- ข้อ 3 -->
+                                <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                                    <p class="font-bold text-[#003057] text-base mb-2">🎁 3. ระยะเวลาการแลกรับของรางวัล</p>
+                                    <ul class="list-disc pl-5 space-y-1.5 mb-2">
+                                        <li>รอตรวจสอบข้อมูล: 7-14 วัน</li>
+                                        <li>ระยะเวลาจัดส่ง: 15-30 วัน (หลังได้รับการอนุมัติ)</li>
+                                    </ul>
+                                    <div class="mt-3 bg-white p-3 rounded-lg border border-gray-200 text-xs text-gray-500 leading-relaxed">
+                                        <span class="font-semibold text-gray-600">หมายเหตุ:</span> ของรางวัลบางรายการอาจใช้เวลาในการเตรียมและจัดส่งไม่เท่ากัน หากเกินกำหนดเวลาที่แจ้งไว้ ท่านสามารถทักแชท LINE ของโครงการเพื่อติดตามสถานะได้เลยครับ
+                                    </div>
+                                </div>
+
+                                <!-- ข้อ 4 -->
+                                <div class="bg-red-50 p-4 rounded-xl border border-red-100">
+                                    <p class="font-bold text-red-600 text-base mb-2">⚠️ 4. ข้อควรระวัง</p>
+                                    <ul class="list-disc pl-5 space-y-1.5 text-red-800">
+                                        <li>หากพบการกรอกข้อมูลซ้ำหรือมีพฤติกรรมทุจริต บริษัทฯ ขอสงวนสิทธิ์ในการระงับบัญชีและตัดคะแนนย้อนหลังทันที</li>
+                                        <li>เงื่อนไขเป็นไปตามที่บริษัทฯ กำหนด และอาจมีการเปลี่ยนแปลงได้โดยไม่ต้องแจ้งล่วงหน้า</li>
+                                    </ul>
+                                </div>
+
+                                <div class="p-4 bg-blue-50 rounded-xl mt-4 text-center border border-blue-100">
+                                    <p class="text-sm text-[#00529b] font-medium leading-relaxed">
+                                        หากมีข้อสงสัยหรือต้องการสอบถามข้อมูลเพิ่มเติม<br>สามารถพิมพ์ทิ้งไว้ในแชทนี้ได้เลยครับ<br>
+                                        <span class="block mt-1 font-semibold">ขอบคุณที่ร่วมเป็นครอบครัวเพื่อนแท้ช่างแอร์ครับ 💙</span>
+                                    </p>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-2xl">
+                    <button type="button" onclick="closeConditionsModal()" class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-6 py-2.5 bg-[#00529b] text-base font-semibold text-white hover:bg-[#003057] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00529b] sm:ml-3 sm:w-auto sm:text-sm transition-colors">
+                        รับทราบและปิดหน้าต่าง
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            80% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+
     <script>
         // =========================================================================
-        // URL จาก Google Apps Script ที่คุณสร้างขึ้น
+        // ฟังก์ชันเปิด/ปิด Modal เงื่อนไข
         // =========================================================================
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbyKOL21STtzNGw1RRINgpgdEyXKbXrUANkvE-rRaLhe0AzCvmTg7LOogVpy3uALahkq/exec"; 
+        function openConditionsModal() {
+            document.getElementById('conditionsModal').classList.remove('hidden');
+        }
+
+        function closeConditionsModal() {
+            document.getElementById('conditionsModal').classList.add('hidden');
+        }
+
+        // =========================================================================
+        // URL จาก Google Apps Script
+        // =========================================================================
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbx5knJDn1Mwk_9g1REdoz3mW5DxbN2TTadPTBoT9ELtdbL26uBN08qmzhzzTbPRVYnL/exec"; 
         
         const excelInput = document.getElementById('excelFile');
         const excelFileName = document.getElementById('excelFileName');
@@ -144,7 +329,7 @@
         // แสดงชื่อไฟล์ Excel
         excelInput.addEventListener('change', function(e) {
             if (this.files && this.files.length > 0) {
-                excelFileName.textContent = `📁 ${this.files[0].name}`;
+                excelFileName.innerHTML = `<span class="flex items-center"><svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> ${this.files[0].name}</span>`;
                 excelFileName.classList.remove('hidden');
             } else {
                 excelFileName.classList.add('hidden');
@@ -154,19 +339,19 @@
         // ตรวจสอบรูปภาพ
         imageInput.addEventListener('change', function(e) {
             const files = this.files;
-            if (files.length > 50) {
-                document.getElementById('imageErrorMessage').textContent = `คุณเลือกมา ${files.length} รูป (ห้ามเกิน 50 รูป)`;
+            if (files.length > 20) {
+                document.getElementById('imageErrorMessage').textContent = `คุณเลือกมา ${files.length} รูป (ระบบจำกัดที่ 20 รูปต่อรอบ)`;
                 document.getElementById('imageError').classList.remove('hidden');
                 document.getElementById('imageCountBadge').classList.add('hidden');
                 submitBtn.disabled = true;
-                submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                submitBtn.classList.add('opacity-50', 'cursor-not-allowed', 'transform-none');
                 this.value = ''; 
             } else if (files.length > 0) {
                 document.getElementById('imageError').classList.add('hidden');
                 document.getElementById('imageCountNumber').textContent = files.length;
                 document.getElementById('imageCountBadge').classList.remove('hidden');
                 submitBtn.disabled = false;
-                submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                submitBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'transform-none');
             }
         });
 
@@ -197,7 +382,7 @@
 
             try {
                 // 1. ส่งไฟล์ Excel เพื่อสร้างโฟลเดอร์หลักใน Drive
-                progressText.textContent = "กำลังสร้างแฟ้มข้อมูลและอัพโหลด Excel...";
+                progressText.textContent = "กำลังตรวจสอบข้อมูลช่างแอร์...";
                 progressBar.style.width = '10%';
                 const excelBase64 = await toBase64(excelFile);
                 
@@ -218,7 +403,8 @@
                 let initResult = await initResponse.json();
                 if (!initResult.success) throw new Error(initResult.error || "เกิดข้อผิดพลาดในการสร้างโฟลเดอร์");
                 
-                const folderId = initResult.folderId; // ได้รับ ID โฟลเดอร์วันที่จาก Drive
+                const folderId = initResult.folderId; // ได้รับ ID โฟลเดอร์จาก Drive
+                const uploadCount = initResult.uploadCount; // ได้รับลำดับครั้งการอัพโหลด
 
                 // 2. ทยอยอัพโหลดรูปภาพ (บีบอัดรูปก่อนส่ง)
                 const options = { maxSizeMB: 0.5, maxWidthOrHeight: 1920, useWebWorker: true };
@@ -247,7 +433,8 @@
                     if (!imgResult.success) console.error("อัพโหลดรูปภาพล้มเหลว:", imageFiles[i].name);
                 }
 
-                // สำเร็จ!
+                // สำเร็จ! นำจำนวนครั้งมาแสดงที่หน้าจอ
+                document.getElementById('uploadCountText').innerHTML = `ส่งงานรอบที่ <span class="text-2xl">${uploadCount}</span> ของวันนี้`;
                 loadingOverlay.classList.add('hidden');
                 document.getElementById('successMessage').classList.remove('hidden');
 
