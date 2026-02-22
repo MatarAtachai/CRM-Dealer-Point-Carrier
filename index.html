@@ -40,7 +40,7 @@
                 <img src="https://img5.pic.in.th/file/secure-sv1/final-Logo-CarrierCampaign-2025---Copy.png" alt="เพื่อนแท้ช่างแอร์ แคเรียร์" class="h-24 sm:h-28 object-contain drop-shadow-xl">
             </div>
             
-            <p class="relative z-10 text-blue-100 text-sm mt-2 font-light">ส่งข้อมูลและอัพโหลดรูปภาพสะสมคะแนน (สูงสุด 20 รูป/ครั้ง)</p>
+            <p class="relative z-10 text-blue-100 text-sm mt-2 font-light">ระบบส่งงานและอัพโหลดรูปภาพ (สูงสุด 20 รูป/ครั้ง)</p>
             
             <div class="relative z-10 mt-2">
                 <span class="inline-block bg-white/10 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-full border border-white/20">
@@ -188,7 +188,7 @@
                     
                     <!-- ปุ่มดาวน์โหลดไฟล์ Template Excel -->
                     <!-- *** ให้เปลี่ยน href="#" เป็นลิงก์ Google Drive ของไฟล์ Add point_template.xlsx ของคุณ *** -->
-                    <a href="https://docs.google.com/spreadsheets/d/1r7-yFna6dsySKwAoRUlU3W2ThkS-fgOl/edit?usp=drive_link&ouid=102389700854424889256&rtpof=true&sd=true" target="_blank" class="inline-flex items-center text-xs font-semibold text-[#00529b] hover:text-[#003057] bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-md border border-blue-200 transition-colors cursor-pointer">
+                    <a href="#" target="_blank" class="inline-flex items-center text-xs font-semibold text-[#00529b] hover:text-[#003057] bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-md border border-blue-200 transition-colors cursor-pointer">
                         <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                         </svg>
@@ -270,7 +270,7 @@
             <div class="pt-6 border-t border-gray-100">
                 <button type="submit" id="submitBtn"
                     class="w-full py-3.5 px-4 border border-transparent rounded-xl shadow-lg text-lg font-semibold text-white bg-gradient-to-r from-[#003057] to-[#00529b] hover:from-[#002040] hover:to-[#003057] focus:outline-none focus:ring-4 focus:ring-[#00529b]/30 transform transition-all active:scale-[0.98]">
-                    ส่งข้อมูล
+                    ส่งงานให้แคเรียร์
                 </button>
             </div>
         </form>
@@ -513,31 +513,40 @@
                 const folderId = initResult.folderId; // ได้รับ ID โฟลเดอร์จาก Drive
                 const uploadCount = initResult.uploadCount; // ได้รับลำดับครั้งการอัพโหลด
 
-                // 2. ทยอยอัพโหลดรูปภาพ (บีบอัดรูปก่อนส่ง)
-                const options = { maxSizeMB: 0.5, maxWidthOrHeight: 1920, useWebWorker: true };
+                // 2. ทยอยอัพโหลดรูปภาพแบบแบ่งกลุ่ม (Batch Upload) เพื่อความรวดเร็ว
+                // ปรับลดขนาดไฟล์ลงเหลือ 200KB / กว้าง 1280px (เพียงพอสำหรับอ่านตัวเลข และเร็วขึ้นมาก)
+                const options = { maxSizeMB: 0.2, maxWidthOrHeight: 1280, useWebWorker: true };
+                const batchSize = 3; // ส่งพร้อมกันทีละ 3 รูป เพื่อให้ Google Drive รับข้อมูลได้รวดเร็วโดยไม่ชนกัน
 
-                for (let i = 0; i < imageFiles.length; i++) {
-                    progressText.textContent = `กำลังอัพโหลดรูปภาพที่ ${i + 1} จาก ${imageFiles.length} รูป...`;
-                    progressBar.style.width = `${10 + (((i + 1) / imageFiles.length) * 90)}%`;
-
-                    // บีบอัดรูป
-                    const compressedFile = await imageCompression(imageFiles[i], options);
-                    const base64Data = await toBase64(compressedFile);
-
-                    // ส่งรูปเข้าโฟลเดอร์ย่อยใน Drive
-                    let imgResponse = await fetch(GAS_URL, {
-                        method: 'POST',
-                        body: JSON.stringify({
-                            action: 'uploadImage',
-                            folderId: folderId,
-                            fileName: imageFiles[i].name,
-                            mimeType: compressedFile.type,
-                            data: base64Data
-                        })
-                    });
+                for (let i = 0; i < imageFiles.length; i += batchSize) {
+                    const currentBatch = Array.from(imageFiles).slice(i, i + batchSize);
                     
-                    let imgResult = await imgResponse.json();
-                    if (!imgResult.success) console.error("อัพโหลดรูปภาพล้มเหลว:", imageFiles[i].name);
+                    progressText.textContent = `กำลังอัพโหลดรูปภาพที่ ${i + 1} ถึง ${Math.min(i + batchSize, imageFiles.length)} จาก ${imageFiles.length} รูป...`;
+                    progressBar.style.width = `${10 + (((i + currentBatch.length) / imageFiles.length) * 90)}%`;
+
+                    // ทำการบีบอัดและอัพโหลดรูปในกลุ่มนี้พร้อมๆ กันแบบคู่ขนาน (Parallel)
+                    await Promise.all(currentBatch.map(async (file) => {
+                        try {
+                            const compressedFile = await imageCompression(file, options);
+                            const base64Data = await toBase64(compressedFile);
+
+                            let imgResponse = await fetch(GAS_URL, {
+                                method: 'POST',
+                                body: JSON.stringify({
+                                    action: 'uploadImage',
+                                    folderId: folderId,
+                                    fileName: file.name,
+                                    mimeType: compressedFile.type,
+                                    data: base64Data
+                                })
+                            });
+                            
+                            let imgResult = await imgResponse.json();
+                            if (!imgResult.success) console.error("อัพโหลดรูปภาพล้มเหลว:", file.name);
+                        } catch (err) {
+                            console.error("เกิดข้อผิดพลาดกับไฟล์:", file.name, err);
+                        }
+                    }));
                 }
 
                 // สำเร็จ! นำจำนวนครั้งมาแสดงที่หน้าจอ
@@ -555,4 +564,3 @@
     </script>
 </body>
 </html>
-
