@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบนำเข้าข้อมูลและรูปภาพร้านค้า</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- ไลบรารีสำหรับบีบอัดรูปภาพก่อนอัพโหลด (ลดขนาดไฟล์ ป้องกัน Drive เต็มเร็ว) -->
+    <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Prompt', sans-serif; background-color: #f3f4f6; }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-white w-full max-w-2xl rounded-2xl shadow-xl overflow-hidden relative">
+        <!-- Header -->
+        <div class="bg-blue-600 px-6 py-5">
+            <h2 class="text-2xl font-semibold text-white">ระบบนำเข้าข้อมูลร้านค้า</h2>
+            <p class="text-blue-100 text-sm mt-1">อัพโหลดไฟล์ Excel และรูปภาพ (สูงสุด 50 รูป)</p>
+        </div>
+
+        <!-- ฟอร์มกรอกข้อมูล -->
+        <form id="uploadForm" class="p-6 space-y-6">
+            
+            <!-- 1. ชื่อร้านค้า -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1" for="shopName">ชื่อร้านค้า <span class="text-red-500">*</span></label>
+                <select id="shopName" name="shopName" required
+                    class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <option value="" disabled selected>-- กรุณาเลือกร้านค้า --</option>
+                    <option value="Shop_A">ร้านค้า A (สาขาหลัก)</option>
+                    <option value="Shop_B">ร้านค้า B (สาขารอง)</option>
+                    <option value="Shop_C">ร้านค้า C</option>
+                    <option value="Shop_D">ร้านค้า D</option>
+                </select>
+            </div>
+
+            <!-- 2. หมายเลขบัตร -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1" for="idCard">หมายเลขบัตร <span class="text-red-500">*</span></label>
+                <input type="text" id="idCard" name="idCard" required placeholder="กรอกหมายเลขบัตร 13 หลัก" maxlength="13" pattern="\d{13}" title="กรุณากรอกตัวเลข 13 หลัก"
+                    class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+
+            <!-- 3. อัพโหลดไฟล์ Excel -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1" for="excelFile">อัพโหลดไฟล์ Excel <span class="text-red-500">*</span></label>
+                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:bg-gray-50 transition-colors">
+                    <div class="space-y-1 text-center">
+                        <svg class="mx-auto h-12 w-12 text-green-500" fill="none" viewBox="0 0 48 48" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" />
+                        </svg>
+                        <div class="flex text-sm text-gray-600 justify-center">
+                            <label for="excelFile" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500">
+                                <span>คลิกเพื่อเลือกไฟล์ Excel</span>
+                                <input id="excelFile" name="excelFile" type="file" class="sr-only" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" required>
+                            </label>
+                        </div>
+                        <p id="excelFileName" class="text-sm font-semibold text-green-600 mt-2 hidden"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. อัพโหลดรูปภาพ -->
+            <div>
+                <div class="flex justify-between items-end mb-1">
+                    <label class="block text-sm font-medium text-gray-700" for="imageFiles">อัพโหลดรูปภาพ <span class="text-red-500">*</span></label>
+                    <span class="text-xs text-gray-500">เลือกได้สูงสุด 50 รูป</span>
+                </div>
+                <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:bg-gray-50 transition-colors">
+                    <div class="space-y-1 text-center">
+                        <svg class="mx-auto h-12 w-12 text-blue-400" fill="none" viewBox="0 0 48 48" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <div class="flex text-sm text-gray-600 justify-center">
+                            <label for="imageFiles" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500">
+                                <span>คลิกเพื่อเลือกรูปภาพ</span>
+                                <input id="imageFiles" name="imageFiles" type="file" class="sr-only" accept="image/*, .heic, .heif" multiple required>
+                            </label>
+                        </div>
+                        <p class="text-xs text-gray-500">รองรับไฟล์ JPG, PNG, WEBP, HEIC</p>
+                    </div>
+                </div>
+                
+                <div id="imageError" class="hidden mt-2 p-3 bg-red-50 border border-red-200 rounded-md">
+                    <span id="imageErrorMessage" class="text-sm text-red-700"></span>
+                </div>
+
+                <div id="imageCountBadge" class="hidden mt-2">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                        เลือกแล้ว: <span id="imageCountNumber" class="ml-1 font-bold">0</span>/50 รูป
+                    </span>
+                </div>
+            </div>
+
+            <!-- ปุ่ม Submit -->
+            <div class="pt-4 border-t border-gray-200">
+                <button type="submit" id="submitBtn"
+                    class="w-full py-3 px-4 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors">
+                    ยืนยันการอัพโหลดข้อมูล
+                </button>
+            </div>
+        </form>
+
+        <!-- Loading Overlay (มี Progress Bar) -->
+        <div id="loadingOverlay" class="hidden absolute inset-0 bg-white bg-opacity-95 flex flex-col items-center justify-center z-10 px-6">
+            <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-600 mb-4"></div>
+            <p id="progressText" class="text-lg font-medium text-gray-700 text-center">กำลังเชื่อมต่อระบบ...</p>
+            
+            <div class="w-full max-w-md bg-gray-200 rounded-full h-2.5 mt-4 mb-2">
+                <div id="progressBar" class="bg-blue-600 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+            <p class="text-sm text-red-500 mt-2 font-medium">⚠️ ห้ามปิดหน้าต่างนี้จนกว่าจะเสร็จสิ้น</p>
+        </div>
+
+        <!-- Success Message -->
+        <div id="successMessage" class="hidden absolute inset-0 bg-white flex flex-col items-center justify-center z-20 p-6 text-center">
+            <div class="h-20 w-20 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                <svg class="h-10 w-10 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-900 mb-2">อัพโหลดสำเร็จ!</h3>
+            <p class="text-gray-600 mb-6">ไฟล์ทั้งหมดถูกจัดเก็บลงโฟลเดอร์ใน Google Drive เรียบร้อยแล้ว</p>
+            <button onclick="window.location.reload()" class="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg font-medium transition-colors">
+                ส่งข้อมูลเพิ่มอีกครั้ง
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // =========================================================================
+        // URL จาก Google Apps Script ที่คุณสร้างขึ้น
+        // =========================================================================
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbyKOL21STtzNGw1RRINgpgdEyXKbXrUANkvE-rRaLhe0AzCvmTg7LOogVpy3uALahkq/exec"; 
+        
+        const excelInput = document.getElementById('excelFile');
+        const excelFileName = document.getElementById('excelFileName');
+        const imageInput = document.getElementById('imageFiles');
+        const submitBtn = document.getElementById('submitBtn');
+
+        // แสดงชื่อไฟล์ Excel
+        excelInput.addEventListener('change', function(e) {
+            if (this.files && this.files.length > 0) {
+                excelFileName.textContent = `📁 ${this.files[0].name}`;
+                excelFileName.classList.remove('hidden');
+            } else {
+                excelFileName.classList.add('hidden');
+            }
+        });
+
+        // ตรวจสอบรูปภาพ
+        imageInput.addEventListener('change', function(e) {
+            const files = this.files;
+            if (files.length > 50) {
+                document.getElementById('imageErrorMessage').textContent = `คุณเลือกมา ${files.length} รูป (ห้ามเกิน 50 รูป)`;
+                document.getElementById('imageError').classList.remove('hidden');
+                document.getElementById('imageCountBadge').classList.add('hidden');
+                submitBtn.disabled = true;
+                submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                this.value = ''; 
+            } else if (files.length > 0) {
+                document.getElementById('imageError').classList.add('hidden');
+                document.getElementById('imageCountNumber').textContent = files.length;
+                document.getElementById('imageCountBadge').classList.remove('hidden');
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        });
+
+        // แปลงไฟล์เป็น Base64
+        const toBase64 = file => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result.split(',')[1]);
+            reader.onerror = error => reject(error);
+        });
+
+        // จัดการ Submit
+        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const shopName = document.getElementById('shopName').value;
+            const idCard = document.getElementById('idCard').value;
+            const excelFile = document.getElementById('excelFile').files[0];
+            const imageFiles = document.getElementById('imageFiles').files;
+
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const progressText = document.getElementById('progressText');
+            const progressBar = document.getElementById('progressBar');
+
+            submitBtn.disabled = true;
+            loadingOverlay.classList.remove('hidden');
+            progressBar.style.width = '0%';
+
+            try {
+                // 1. ส่งไฟล์ Excel เพื่อสร้างโฟลเดอร์หลักใน Drive
+                progressText.textContent = "กำลังสร้างแฟ้มข้อมูลและอัพโหลด Excel...";
+                progressBar.style.width = '10%';
+                const excelBase64 = await toBase64(excelFile);
+                
+                let initResponse = await fetch(GAS_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'init',
+                        shopName: shopName,
+                        idCard: idCard,
+                        excelFile: {
+                            name: excelFile.name,
+                            mimeType: excelFile.type,
+                            data: excelBase64
+                        }
+                    })
+                });
+                
+                let initResult = await initResponse.json();
+                if (!initResult.success) throw new Error(initResult.error || "เกิดข้อผิดพลาดในการสร้างโฟลเดอร์");
+                
+                const folderId = initResult.folderId; // ได้รับ ID โฟลเดอร์วันที่จาก Drive
+
+                // 2. ทยอยอัพโหลดรูปภาพ (บีบอัดรูปก่อนส่ง)
+                const options = { maxSizeMB: 0.5, maxWidthOrHeight: 1920, useWebWorker: true };
+
+                for (let i = 0; i < imageFiles.length; i++) {
+                    progressText.textContent = `กำลังอัพโหลดรูปภาพที่ ${i + 1} จาก ${imageFiles.length} รูป...`;
+                    progressBar.style.width = `${10 + (((i + 1) / imageFiles.length) * 90)}%`;
+
+                    // บีบอัดรูป
+                    const compressedFile = await imageCompression(imageFiles[i], options);
+                    const base64Data = await toBase64(compressedFile);
+
+                    // ส่งรูปเข้าโฟลเดอร์ย่อยใน Drive
+                    let imgResponse = await fetch(GAS_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            action: 'uploadImage',
+                            folderId: folderId,
+                            fileName: imageFiles[i].name,
+                            mimeType: compressedFile.type,
+                            data: base64Data
+                        })
+                    });
+                    
+                    let imgResult = await imgResponse.json();
+                    if (!imgResult.success) console.error("อัพโหลดรูปภาพล้มเหลว:", imageFiles[i].name);
+                }
+
+                // สำเร็จ!
+                loadingOverlay.classList.add('hidden');
+                document.getElementById('successMessage').classList.remove('hidden');
+
+            } catch (error) {
+                console.error(error);
+                alert("เกิดข้อผิดพลาด: " + error.message);
+                loadingOverlay.classList.add('hidden');
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
